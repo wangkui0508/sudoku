@@ -181,61 +181,75 @@ func Rule1Round(sudoku [][9]MaskType) {
 	}
 }
 
-// ===========================================
+// ================================================
 
 func Rule2Round(sudoku [][9]MaskType) {
 	for n := 0; n < 9; n++ {
-		Rule2ForMask(sudoku, MaskType(1) << n)
+		Rule2ForMask(sudoku, MaskType(1) << n, 1)
+	}
+	for n := 0; n < 9; n++ {
+		for m := 0; m < n; m++ {
+			Rule2ForMask(sudoku, (MaskType(1)<<n)|(MaskType(1)<<m), 2)
+		}
+	}
+	for n := 0; n < 9; n++ {
+		for m := 0; m < n; m++ {
+			for l := 0; l < m; l++ {
+				Rule2ForMask(sudoku, (MaskType(1)<<n)|(MaskType(1)<<m)|(MaskType(1)<<l), 3)
+			}
+		}
 	}
 }
 
-func Rule2ForMask(sudoku [][9]MaskType, mask MaskType) {
+func Rule2ForMask(sudoku [][9]MaskType, mask MaskType, totalCount int) {
 	// the same column
-	for xPos := 0; xPos < 9; xPos++ {
-		count := 0
-		where := -1
-		for y := 0; y < 9; y++ {
-			if (sudoku[y][xPos] & mask) != 0 {
-				count++
-				where = y
+	coordList := make([]Coord, 0, 9)
+	patialMatch := 0
+	analyzeList := func() {
+		if len(coordList) == totalCount && patialMatch == 0 {
+			for _, c := range coordList {
+				sudoku[c.Y][c.X] = mask
 			}
 		}
-		if count == 1 {
-			sudoku[where][xPos] = mask
+		coordList = coordList[:0]
+		patialMatch = 0
+	}
+	for xPos := 0; xPos < 9; xPos++ {
+		for y := 0; y < 9; y++ {
+			if (sudoku[y][xPos] & mask) == mask {
+				coordList = append(coordList, Coord{Y: y, X: xPos})
+			} else if (sudoku[y][xPos] & mask) != 0 {
+				patialMatch++
+			}
 		}
+		analyzeList()
 	}
 	// the same row
 	for yPos := 0; yPos < 9; yPos++ {
-		count := 0
-		where := -1
+		coordList = coordList[:0]
 		for x := 0; x < 9; x++ {
-			if (sudoku[yPos][x] & mask) != 0 {
-				count++
-				where = x
+			if (sudoku[yPos][x] & mask) == mask {
+				coordList = append(coordList, Coord{Y: yPos, X: x})
+			} else if (sudoku[yPos][x] & mask) != 0 {
+				patialMatch++
 			}
 		}
-		if count == 1 {
-			sudoku[yPos][where] = mask
-		}
+		analyzeList()
 	}
 	// the same block
 	for _, c := range CList {
 		xStart := c.X*3
 		yStart := c.Y*3
-		count := 0
-		whereX, whereY := -1, -1
 		for x := xStart; x < xStart+3; x++ {
 			for y := yStart; y < yStart+3; y++ {
-				if (sudoku[y][x] & mask) != 0 {
-					count++
-					whereX = x
-					whereY = y
+				if (sudoku[y][x] & mask) == mask {
+					coordList = append(coordList, Coord{Y: y, X: x})
+				} else if (sudoku[y][x] & mask) != 0 {
+					patialMatch++
 				}
 			}
 		}
-		if count == 1 {
-			sudoku[whereY][whereX] = mask
-		}
+		analyzeList()
 	}
 }
 

@@ -9,14 +9,15 @@ import (
 )
 
 func main() {
-	test()
+	try()
 }
 
 func try() {
 	totalTry := 0
+	totalSuccess := 0
 	for {
-		values, solution, difficulty := generator.GenSudokuPuzzle()
-		if difficulty < 900 {
+		values, _, difficulty := generator.GenSudokuPuzzle()
+		if difficulty < 100 {
 			continue
 		}
 		totalTry++
@@ -28,22 +29,27 @@ func try() {
 		}
 		sudoku := fastsolver.InitSudoku(values)
 		success := fastsolver.Rule012Loop(sudoku[:])
-		if !success {
-			ui.PrintSudoku(sudoku)
-			fmt.Println("============Input===================")
-			sudoku = fastsolver.InitSudoku(values)
-			ui.PrintSudoku(sudoku)
-			for i := 0; i < 9; i++ {
-				row := solution[i]
-				fmt.Printf("%d%d%d %d%d%d %d%d%d\n",
-				row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8])
-				if i==2 || i == 5 {
-					fmt.Println()
-				}
-			}
-			break
+		fmt.Printf("%d %v\n", totalTry, success)
+		if success {
+			totalSuccess++
 		}
+		//if !success {
+		//	ui.PrintSudoku(sudoku)
+		//	fmt.Println("============Input===================")
+		//	sudoku = fastsolver.InitSudoku(values)
+		//	ui.PrintSudoku(sudoku)
+		//	for i := 0; i < 9; i++ {
+		//		row := solution[i]
+		//		fmt.Printf("%d%d%d %d%d%d %d%d%d\n",
+		//		row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8])
+		//		if i==2 || i == 5 {
+		//			fmt.Println()
+		//		}
+		//	}
+		//	break
+		//}
 	}
+	fmt.Printf("totalSuccess %d\n", totalSuccess)
 }
 
 func test() {
@@ -100,7 +106,7 @@ func test() {
 	//	{0, 8, 0,    0, 9, 0,    3, 5, 0},
 	//}
 	values := [9][9]int{
-		{8, 2, 0,    0, 4, 0,    0, 0, 0},
+		{8, 0, 0,    0, 4, 0,    0, 0, 0},
 		{0, 0, 3,    5, 0, 0,    0, 0, 7},
 		{0, 1, 6,    0, 0, 0,    0, 4, 0},
 
@@ -117,6 +123,17 @@ func test() {
 
 	fastsolver.Rule012Loop(sudoku[:])
 	ui.PrintSudoku(sudoku)
+
+	//fmt.Println("=================Rule3Round==================")
+	//fastsolver.Rule3Round(sudoku[:])
+	//ui.PrintSudoku(sudoku)
+
+	//fmt.Println("===================================")
+	//fastsolver.Rule012Loop(sudoku[:])
+	//ui.PrintSudoku(sudoku)
+	//fmt.Println("=================Rule3Round==================")
+	//fastsolver.Rule3Round(sudoku[:])
+	//ui.PrintSudoku(sudoku)
 
 	//fmt.Println("=================Rule0Loop==================")
 	//fastsolver.Rule0Loop(sudoku[:])
