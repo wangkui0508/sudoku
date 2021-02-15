@@ -1,7 +1,10 @@
 package fastsolver
 
 import (
+	"fmt"
+
 	"github.com/wangkui0508/sudoku/types"
+	"github.com/wangkui0508/sudoku/ui"
 )
 
 type MaskType = types.MaskType
@@ -262,8 +265,14 @@ func Rule012Loop(sudoku [][9]MaskType) (success bool) {
 			return true
 		}
 		Rule0Round(sudoku)
+		fmt.Println("========== Rule0Round: ============")
+		ui.PrintSudoku(sudoku)
 		Rule1Round(sudoku)
+		fmt.Println("========== Rule1Round: ============")
+		ui.PrintSudoku(sudoku)
 		Rule2Round(sudoku)
+		fmt.Println("========== Rule2Round: ============")
+		ui.PrintSudoku(sudoku)
 		tp := CountPossibleValueCount(sudoku)
 		if totalPossible == tp {
 			return false

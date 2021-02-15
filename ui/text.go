@@ -37,7 +37,7 @@ func PrintChart(chart [][BlkSz*3]byte) {
 	}
 }
 
-func FillChart(sudoku [9][9]MaskType, chart [][BlkSz*3]byte) {
+func FillChart(sudoku [][9]MaskType, chart [][BlkSz*3]byte) {
 	for x := 0; x < 3; x++ {
 		for y := 0; y < 3; y++ {
 			FillBlock(sudoku, chart, y, x)
@@ -45,7 +45,7 @@ func FillChart(sudoku [9][9]MaskType, chart [][BlkSz*3]byte) {
 	}
 }
 
-func FillBlock(sudoku [9][9]MaskType, chart [][BlkSz*3]byte, yStart, xStart int) {
+func FillBlock(sudoku [][9]MaskType, chart [][BlkSz*3]byte, yStart, xStart int) {
 	for x := 0; x < 3; x++ {
 		for y := 0; y < 3; y++ {
 			n := sudoku[yStart*3+y][xStart*3+x]
@@ -74,7 +74,7 @@ func FillNum(n MaskType, chart [][BlkSz*3]byte, yStart, xStart int) {
 	}
 }
 
-func PrintSudoku(sudoku [9][9]MaskType) {
+func PrintSudoku(sudoku [][9]MaskType) {
 	chart := EmptyChart()
 	FillChart(sudoku, chart[:])
 	PrintChart(chart[:])
