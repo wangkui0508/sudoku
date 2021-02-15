@@ -95,6 +95,7 @@ func InSameRow(coordList []Coord) bool {
 	return true
 }
 
+// Similar to fastsolver's region rule. A region forbids the same value in same row/column
 func ExtractNewForbids(grid [][9]int8, colForbid, rowForbid [][9][3]int8) (newColForbid, newRowForbid [][9][3]int8) {
 	newColForbid, newRowForbid = make([][9][3]int8, 9), make([][9][3]int8, 9)
 	for _, blk := range CList {
@@ -197,6 +198,7 @@ func HasNumInCol(grid [][9]int8, num int8, x int) bool {
 	return false
 }
 
+// If in a block/row/column, there is only one number unfilled, then fill it.
 func FillOnlyRemainedNumber(grid [][9]int8) (coords4Blk, coords4Row, coords4Col []Coord) {
 	for _, c := range CList {
 		unfilledNumbers := GetUnfilledNumInBlock(grid, c.Y, c.X)
@@ -222,6 +224,8 @@ func FillOnlyRemainedNumber(grid [][9]int8) (coords4Blk, coords4Row, coords4Col 
 	return
 }
 
+// In a block, for some unfilled number, if only one position is free of row/column conflict, then this is
+// the only position for this number
 func FillNumberWithOnlyPosition(grid [][9]int8, colForbid, rowForbid [][9][3]int8) (coordList []Coord) {
 	for _, c := range CList {
 		unfilledNumbers := GetUnfilledNumInBlock(grid, c.Y, c.X)
@@ -257,6 +261,7 @@ func GetPossibleNumAt(grid [][9]int8, yPos, xPos int) []int8 {
 	return GetNonZeros(all)
 }
 
+// For a grid, if all other numbers have occured in the block/row/column, then the only left value is for this grid
 func FillOnlyPossibleNumber(grid [][9]int8) (coordList []Coord) {
 	for y := 0; y < 9; y++ {
 		for x := 0; x < 9; x++ {

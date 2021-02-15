@@ -5,6 +5,8 @@ import (
 
 	"github.com/wangkui0508/sudoku/generator"
 	"github.com/wangkui0508/sudoku/humansolver"
+	"github.com/wangkui0508/sudoku/fastsolver"
+	"github.com/wangkui0508/sudoku/ui"
 )
 
 
@@ -121,5 +123,10 @@ func test() {
 	//	{0, 0, 0,    0, 0, 0,    0, 0, 0},
 	//	{0, 0, 0,    0, 0, 0,    0, 0, 0},
 	//}
-	humansolver.SimpleLoop(grid[:])
+	success := humansolver.SimpleLoop(grid[:])
+	if !success {
+		sudoku := fastsolver.InitSudoku(grid[:])
+		fastsolver.Rule012Loop(sudoku[:])
+		ui.PrintSudoku(sudoku[:])
+	}
 }

@@ -9,7 +9,7 @@ import (
 
 type MaskType = types.MaskType
 
-func InitSudoku(values [9][9]int) (sudoku [9][9]MaskType) {
+func InitSudoku(values [][9]int8) (sudoku [9][9]MaskType) {
 	for i := 0; i < 9; i++ {
 		for j := 0; j < 9; j++ {
 			sudoku[i][j] = 0x1FF
@@ -70,6 +70,7 @@ type Coord struct {
 	X int
 }
 
+// Rule0: If a grid's number is fixed, then this number cannot occur again in the same block/row/column
 func Rule0Round(sudoku [][9]MaskType) {
 	var coordList []Coord
 	for y := 0; y < 9; y++ {
@@ -116,11 +117,14 @@ func Rule0ForPos(sudoku [][9]MaskType, yPos, xPos int) {
 
 // ===========================================
 
+// Rule1: If we find a vertical(horizontal) region in a block, then the region's value cannot occur in the same
+// column(row) at other blocks. Region is defined as: in some block, two or three grids vertical(horizontal) 
+// are the only places where we can find a number.
 type Rule1Pos struct {
 	IsVertical bool
 	Mask       MaskType
-	Where      int
-	Source     int
+	Where      int // which row or column
+	Source     int // the source block that the region resides
 }
 
 var CList = []Coord{{0,0}, {0,1}, {0,2}, {1,0}, {1,1}, {1,2}, {2,0}, {2,1}, {2,2}}
@@ -186,6 +190,8 @@ func Rule1Round(sudoku [][9]MaskType) {
 
 // ================================================
 
+// Rule2: If in some block/row/column, 1/2 number(s) can only be found in 1/2 grids, then other grids
+// cannot have the number(s)
 func Rule2Round(sudoku [][9]MaskType) {
 	for n := 0; n < 9; n++ {
 		Rule2ForMask(sudoku, MaskType(1) << n, 1)
