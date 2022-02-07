@@ -4,6 +4,15 @@ import (
 	"fmt"
 )
 
+/*
+残余唯一：如果一个行、一个列或者一个方块内部，只剩下数字9没有填充，那么剩余的空位必然是9。
+
+数据的唯一位置：如果排除掉行列冲突之后，9在某个方块内部只剩下唯一的空位可以填入，那么就把它填入
+
+位置的唯一数字：某个空位里，如果只能填9，才能避免同行、同列或、同方块内部的冲突，那么就填入9。
+
+行列消除：如果一个方块内部，数字9所有可能存在的位置，都在同一行或者同一列，那么其他方块在这一行或者这一列上，不可以出现数字9
+*/
 type Coord struct {
 	Y int
 	X int
@@ -44,15 +53,15 @@ func GetUnfilledNumInBlock(grid [][9]int8, bY, bX int) []int8 {
 
 func IsForbidden(num int8, bY, bX int, yPos, xPos int, colForbid, rowForbid [][9][3]int8) bool {
 	for y := 0; y < 9; y++ {
-		if bY*3 <= y || y < bY*3+3 {
+		if bY*3 <= y && y < bY*3+3 {
 			continue
 		}
-		if rowForbid[y][xPos][0] == num || rowForbid[y][xPos][1] == num || rowForbid[y][xPos][2] == num {
+		if colForbid[y][xPos][0] == num || colForbid[y][xPos][1] == num || colForbid[y][xPos][2] == num {
 			return true
 		}
 	}
 	for x := 0; x < 9; x++ {
-		if bX*3 <= x || x < bX*3+3 {
+		if bX*3 <= x && x < bX*3+3 {
 			continue
 		}
 		if rowForbid[yPos][x][0] == num || rowForbid[yPos][x][1] == num || rowForbid[yPos][x][2] == num {
@@ -95,9 +104,30 @@ func InSameRow(coordList []Coord) bool {
 	return true
 }
 
-// Similar to fastsolver's region rule. A region forbids the same value in same row/column
-func ExtractNewForbids(grid [][9]int8, colForbid, rowForbid [][9][3]int8) (newColForbid, newRowForbid [][9][3]int8) {
+func appendAt(arr [][9][3]int8, y, x int, num int8) bool {
+	for i := 0; i < 3; i++ {
+		if arr[y][x][i] == num {
+			return false
+		}
+	}
+	if arr[y][x][0] == 0 {
+		arr[y][x][0] = num
+	} else if arr[y][x][1] == 0 {
+		arr[y][x][1] = num
+	} else if arr[y][x][2] == 0 {
+		arr[y][x][2] = num
+	} else {
+		return false
+	}
+	return true
+}
+
+// In a block, if a number's possible positions are in the same row/column, then this block forbids this number to locate in same row/column of other blocks
+func ExtractNewForbids(grid [][9]int8, colForbid, rowForbid [][9][3]int8) (
+		incrNum int, newColForbid, newRowForbid [][9][3]int8) {
 	newColForbid, newRowForbid = make([][9][3]int8, 9), make([][9][3]int8, 9)
+	copy(newColForbid, colForbid)
+	copy(newRowForbid, rowForbid)
 	for _, blk := range CList {
 		numbers := GetUnfilledNumInBlock(grid, blk.Y, blk.X)
 		for _, num := range numbers {
@@ -105,25 +135,22 @@ func ExtractNewForbids(grid [][9]int8, colForbid, rowForbid [][9][3]int8) (newCo
 			if len(coordList) <= 1 {
 				continue
 			}
+			//if num == 1 && blk.Y == 2 && blk.X == 1 {
+			//	fmt.Printf("Here! %#v\n", coordList)
+			//	fmt.Println(IsForbidden(1, 2, 1,  6, 4, colForbid, rowForbid))
+			//	IsForbiddenPrint(1, 2, 1,  6, 4, colForbid, rowForbid)
+			//}
 			if InSameCol(coordList) {
 				for _, c := range coordList {
-					if newColForbid[c.Y][c.X][0] == 0 {
-						newColForbid[c.Y][c.X][0] = num
-					} else if newColForbid[c.Y][c.X][1] == 0 {
-						newColForbid[c.Y][c.X][1] = num
-					} else if newColForbid[c.Y][c.X][2] == 0 {
-						newColForbid[c.Y][c.X][2] = num
+					if appendAt(newColForbid, c.Y, c.X, num) {
+						incrNum++
 					}
 				}
 			}
 			if InSameRow(coordList) {
 				for _, c := range coordList {
-					if newRowForbid[c.Y][c.X][0] == 0 {
-						newRowForbid[c.Y][c.X][0] = num
-					} else if newRowForbid[c.Y][c.X][1] == 0 {
-						newRowForbid[c.Y][c.X][1] = num
-					} else if newRowForbid[c.Y][c.X][2] == 0 {
-						newRowForbid[c.Y][c.X][2] = num
+					if appendAt(newRowForbid, c.Y, c.X, num) {
+						incrNum++
 					}
 				}
 			}
@@ -293,6 +320,7 @@ func InitStrGrid(grid [][9]int8) [][9]string {
 	return res[:]
 }
 
+//Mark a number with "[]" to highlight it 
 func MarkPositions(strGrid [][9]string, coords []Coord) {
 	for _, c := range coords {
 		s := strGrid[c.Y][c.X]
@@ -351,7 +379,11 @@ func SimpleLoop(grid [][9]int8) bool {
 		if AllDone(grid) {
 			return true
 		}
-		colForbid, rowForbid = ExtractNewForbids(grid, colForbid, rowForbid)
+		incrNum := 1
+		for incrNum != 0 {
+			incrNum, colForbid, rowForbid = ExtractNewForbids(grid, colForbid, rowForbid)
+			fmt.Println("incrNum", incrNum)
+		}
 		hasProgress = SimplePass(grid, colForbid, rowForbid)
 	}
 	return false

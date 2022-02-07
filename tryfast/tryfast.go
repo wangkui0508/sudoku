@@ -9,14 +9,15 @@ import (
 )
 
 func main() {
-	test()
+	try()
+	//test()
 }
 
 func try() {
 	totalTry := 0
 	totalSuccess := 0
 	for {
-		values, _, difficulty := generator.GenSudokuPuzzle()
+		values, solution, difficulty := generator.GenSudokuPuzzle()
 		if difficulty < 100 {
 			continue
 		}
@@ -33,21 +34,21 @@ func try() {
 		if success {
 			totalSuccess++
 		}
-		//if !success {
-		//	ui.PrintSudoku(sudoku)
-		//	fmt.Println("============Input===================")
-		//	sudoku = fastsolver.InitSudoku(values)
-		//	ui.PrintSudoku(sudoku)
-		//	for i := 0; i < 9; i++ {
-		//		row := solution[i]
-		//		fmt.Printf("%d%d%d %d%d%d %d%d%d\n",
-		//		row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8])
-		//		if i==2 || i == 5 {
-		//			fmt.Println()
-		//		}
-		//	}
-		//	break
-		//}
+		if !success {
+			ui.PrintSudoku(sudoku[:])
+			fmt.Println("============Input===================")
+			sudoku = fastsolver.InitSudoku(values[:])
+			ui.PrintSudoku(sudoku[:])
+			for i := 0; i < 9; i++ {
+				row := solution[i]
+				fmt.Printf("%d%d%d %d%d%d %d%d%d\n",
+				row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8])
+				if i==2 || i == 5 {
+					fmt.Println()
+				}
+			}
+			break
+		}
 	}
 	fmt.Printf("totalSuccess %d\n", totalSuccess)
 }
